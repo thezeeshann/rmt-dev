@@ -48,6 +48,7 @@ export function useJobItems(searchText: string) {
   const [jobItems, setJobItems] = useState<JobItems[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
+  const totalNumberOfJobItems = jobItems.length;
   const jobItemsSliced = jobItems.slice(0, 7);
 
   useEffect(() => {
@@ -65,5 +66,19 @@ export function useJobItems(searchText: string) {
   return {
     jobItemsSliced,
     isLoading,
+    totalNumberOfJobItems,
   };
+}
+
+export function useDebounce(value: string): string {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+  useEffect(() => {
+    const timerId = setTimeout(() => {
+      setDebouncedValue(value);
+    }, 1000);
+
+    return () => clearTimeout(timerId);
+  }, [value]);
+
+  return debouncedValue;
 }
