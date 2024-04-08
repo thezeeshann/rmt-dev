@@ -3,7 +3,7 @@ import BookmarksButton from "./BookmarksButton";
 import Container from "./Container";
 import Footer from "./Footer";
 import Header from "./Header";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Logo from "./Logo";
 import SearchForm from "./SearchForm";
 import JobItemContent from "./JobItemContent";
@@ -13,12 +13,26 @@ import Pagination from "./PaginationControls";
 import ResultsCount from "./ResultsCount";
 import Sorting from "./SortingControls";
 import { useDebounce, useJobItems } from "../lib/hooks";
+import { Toaster } from "react-hot-toast";
 
 function App() {
   const [searchText, setSearchText] = useState("");
   const debouncedSearchText = useDebounce(searchText);
-  const { isLoading, jobItemsSliced, totalNumberOfJobItems } =
-    useJobItems(debouncedSearchText);
+  const { isLoading, jobItems } = useJobItems(debouncedSearchText);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const totalNumberOfJobItems = jobItems?.length || 0;
+  const totalNumberOfPages = totalNumberOfJobItems / 7;
+  const jobItemsSliced =
+    jobItems?.slice(currentPage * 7 - 7, currentPage * 7) || [];
+
+  const handlePageChange = (direction: "next" | "previous") => {
+    if (direction === "next") {
+      setCurrentPage((prev) => prev + 1);
+    } else if (direction === "previous") {
+      setCurrentPage((prev) => prev - 1);
+    }
+  };
 
   return (
     <>
@@ -37,11 +51,16 @@ function App() {
             <Sorting />
           </div>
           <JobList jobItems={jobItemsSliced} isLoading={isLoading} />
-          <Pagination />
+          <Pagination
+            onClick={handlePageChange}
+            totalNumberOfPages={totalNumberOfPages}
+            currentPage={currentPage}
+          />
         </Sidebar>
         <JobItemContent />
       </Container>
       <Footer />
+      <Toaster position="top-right" />
     </>
   );
 }
