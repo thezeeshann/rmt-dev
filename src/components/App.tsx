@@ -37,6 +37,9 @@ function App() {
   const jobItemsSortedAndSliced =
     jobItemsSorted?.slice(currentPage * 7 - 7, currentPage * 7) || [];
 
+
+
+
   const handlePageChange = (direction: "next" | "previous") => {
     if (direction === "next") {
       setCurrentPage((prev) => prev + 1);
