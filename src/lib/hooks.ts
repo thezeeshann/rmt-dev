@@ -1,8 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect,useContext } from "react";
 import { JobItemExpanded, JobItems } from "./types";
 import { BASE_URL } from "./constant";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery,useQueries } from "@tanstack/react-query";
 import { handleError } from "./utils";
+import { BookmarksContext } from "../contexts/BookMarksContextProvider";
+
 
 type JobItemApiResponse = {
   publice: boolean;
@@ -39,12 +41,39 @@ export function useJobItem(id: number | null) {
   } as const;
 }
 
+
+export function useJobItems(ids: number[]) {
+  const results = useQueries({
+    queries: ids.map((id) => ({
+      queryKey: ["job-item", id],
+      queryFn: () => fetchJobItem(id),
+      staleTime: 1000 * 60 * 60,
+      refetchOnWindowFocus: false,
+      retry: false,
+      enabled: Boolean(id),
+      onError: handleError,
+    })),
+  });
+
+  const jobItems = results
+    .map((result) => result.data?.jobItem)
+    .filter((jobItem) => Boolean(jobItem)) as JobItemExpanded[];
+  const isLoading = results.some((result) => result.isLoading);
+
+  return {
+    jobItems,
+    isLoading,
+  };
+}
+
+
+
 export function useActiveId() {
-  const [activeId, setActiveId] = useState();
+  const [activeId, setActiveId] = useState<number | null>(null);
 
   useEffect(() => {
     const handleHashChange = () => {
-      const id = window.location.hash.slice(1);
+      const id = +window.location.hash.slice(1);
       setActiveId(id);
     };
     handleHashChange();
@@ -77,7 +106,7 @@ const fetchJobItems = async (
   return data;
 };
 
-export function useJobItems(searchText: string) {
+export function useSearchQuery(searchText: string) {
   const { data, isInitialLoading } = useQuery(
     ["job-items", searchText],
     () => fetchJobItems(searchText),
@@ -95,6 +124,8 @@ export function useJobItems(searchText: string) {
     jobItems: data?.jobItems,
   } as const;
 }
+
+// ----------------------------------------------------
 
 export function useDebounce(value: string): string {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -123,3 +154,14 @@ export function useLocalStorage<T>(
 
   return [value, setValue] as const;
 }
+
+export function useBookmarksContext() {
+  const context = useContext(BookmarksContext);
+  if (!context) {
+    throw new Error(
+      "useBookmarksContext must be used within a BookmarksContextProvider"
+    );
+  }
+  return context;
+}
+// ----------------------------------------------------

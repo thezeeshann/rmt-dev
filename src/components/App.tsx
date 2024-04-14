@@ -12,7 +12,7 @@ import JobList from "./JobList";
 import Pagination from "./PaginationControls";
 import ResultsCount from "./ResultsCount";
 import Sorting from "./SortingControls";
-import { useDebounce, useJobItems } from "../lib/hooks";
+import { useDebounce, useSearchQuery } from "../lib/hooks";
 import { Toaster } from "react-hot-toast";
 
 type SortBy = "relevant" | "recent";
@@ -20,7 +20,7 @@ type SortBy = "relevant" | "recent";
 function App() {
   const [searchText, setSearchText] = useState("");
   const debouncedSearchText = useDebounce(searchText);
-  const { isLoading, jobItems } = useJobItems(debouncedSearchText);
+  const { isLoading, jobItems } = useSearchQuery(debouncedSearchText);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState<SortBy>("relevant");
 
