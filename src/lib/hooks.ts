@@ -1,4 +1,4 @@
-import { useState, useEffect,useContext } from "react";
+import React, { useState, useEffect,useContext } from "react";
 import { JobItemExpanded, JobItems } from "./types";
 import { BASE_URL } from "./constant";
 import { useQuery,useQueries } from "@tanstack/react-query";
@@ -154,6 +154,29 @@ export function useLocalStorage<T>(
 
   return [value, setValue] as const;
 }
+
+
+export function useOnClickOutside(refs:React.RefObject<HTMLElement>[],handler:()=>void){  
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (
+        e.target instanceof HTMLElement &&
+        refs.every((ref)=> !ref.current?.contains(e.target as Node) )
+      )
+       handler()
+    };
+
+    document.addEventListener("click", handleClick);
+
+    return () => {
+      document.removeEventListener("click", handleClick);
+    };
+  }, [refs,handler]);
+
+}
+
+
 
 export function useBookmarksContext() {
   const context = useContext(BookmarksContext);
